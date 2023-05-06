@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[16]:
 
 
 import tensorflow as tf
@@ -39,7 +39,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import confusion_matrix
 
 
-# In[2]:
+# In[17]:
 
 
 def unzip_data(filename):
@@ -56,7 +56,7 @@ def unzip_data(filename):
 # unzip_data("CV_Data.zip")
 
 
-# In[3]:
+# In[18]:
 
 
 name = 'task_1.ipynb'
@@ -84,7 +84,7 @@ test_dir = 'Group_20/test'
 val_dir = 'Group_20/val'
 
 
-# In[4]:
+# In[19]:
 
 
 def delete_folder_contents(path_erase):
@@ -112,7 +112,7 @@ def delete_folder_contents(path_erase):
 # delete_folder_contents(pathfinal2)
 
 
-# In[5]:
+# In[20]:
 
 
 # symbol, telugu, english
@@ -128,7 +128,7 @@ def delete_folder_contents(path_erase):
 
 # ### Data Loading
 
-# In[6]:
+# In[21]:
 
 
 tw = ['ai', 'chA', 'dA', 'lA', 'tA']
@@ -187,7 +187,7 @@ print(classNames)
 
 # ### Visualizing Data
 
-# In[7]:
+# In[23]:
 
 
 def x_y_fun(arr):
@@ -219,14 +219,15 @@ def plot_data(data_X, data_Y):
                 cl+=1
             if(c==25):
                 break
-
+    plt.tight_layout()
+    plt.show()
 
 plot_data(train_X, train_M_Y)
 
 
 # ### Functions
 
-# In[8]:
+# In[24]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -328,7 +329,7 @@ def showResults(model, history, data_X, data_Y, classNames):
 
 # ### Min Max Processing (To make ech sample in range from 0 to 1)
 
-# In[9]:
+# In[25]:
 
 
 def minMaxPreprocessing(data):
@@ -347,7 +348,7 @@ plot_data(train_M_X, train_M_Y)
 
 # ### Padding Sequence
 
-# In[10]:
+# In[26]:
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
@@ -361,7 +362,7 @@ test_M_X = paddingSequence(test_M_X)
 
 # ### Checkking Global Minimum and Maximum
 
-# In[11]:
+# In[27]:
 
 
 def global_min_max(data1, data2):
@@ -386,7 +387,7 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[12]:
+# In[28]:
 
 
 multiplier = 1000
@@ -407,7 +408,7 @@ print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 # ### Callbacks
 
-# In[13]:
+# In[29]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -466,7 +467,7 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[14]:
+# In[30]:
 
 
 tf.random.set_seed(42)
@@ -510,9 +511,15 @@ df_history_1 = pd.read_csv(f'{pathfinal}{model_1.name}_{11}.csv')
 showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 
 
-# In[17]:
+# In[31]:
 
 
 get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
 get_ipython().system(f'jupyter nbconvert {name} --to python')
+
+
+# In[ ]:
+
+
+
 

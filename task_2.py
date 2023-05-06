@@ -25,6 +25,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib
+import librosa
+import librosa.display
 
 import os
 import time
@@ -173,6 +175,8 @@ class_ind = LabelEncoder().fit_transform(class_names)
 print(class_ind)
 
 
+# ### Frequency of seq length
+
 # In[6]:
 
 
@@ -186,9 +190,38 @@ plt.show()
 
 # ### Visualizing Data
 
+# In[7]:
+
+
+def plot_data(data_X, data_Y):
+    sorted_lists = sorted(zip(data_Y, data_X))
+    data_Y, data_X = zip(*sorted_lists)
+    fig, ax = plt.subplots(5,1, figsize=(7, 12))
+    ax = ax.reshape(-1)
+    c=0
+    cl=0
+    mid=2
+    colors = ['r', 'g', 'b', 'y', 'm']
+    for i, ele in enumerate(data_Y):
+        if(ele==cl):
+            ax[c].set_title(f'MFCC Spectrogram: {class_names[cl]}')
+            ax[c].set_ylabel('MFCC Coefficients')
+            ax[c].set_xlabel('Time')
+            im = librosa.display.specshow(np.array(data_X[i]).T, x_axis='time',ax=ax[c])
+            fig.colorbar(im, ax=ax[c])
+            c+=1
+            cl+=1
+            if(c==5):
+                break
+    plt.tight_layout()
+    plt.show()         
+
+plot_data(train_X, train_M_Y)
+
+
 # ### Functions
 
-# In[7]:
+# In[8]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -288,24 +321,6 @@ def showResults(model, history, data_X, data_Y, class_names):
     plottingModel(model)
 
 
-# ### Min Max Processing (To make each sample in range from 0 to 1)
-
-# In[8]:
-
-
-# def minMaxPreprocessing(data):
-#     new_data = []
-#     for i, tup in enumerate(data):
-#         scaler = MinMaxScaler()
-#         tup = np.array(tup).reshape(-1, 1)
-#         scaler.fit(tup)
-#         new_data.append(list(scaler.transform(tup).reshape(-1)))
-#     return new_data
-
-# train_M_X = minMaxPreprocessing(train_X)
-# test_M_X = minMaxPreprocessing(test_X)
-
-
 # ### Padding Sequence
 
 # In[9]:
@@ -320,36 +335,9 @@ test_M_X = paddingSequence(test_X)
 np.min(train_M_X), np.max(train_M_X), np.min(test_M_X), np.max(test_M_X)
 
 
-# In[10]:
-
-
-train_M_X
-
-
-# ### Upscaling the data and Fitting in Integer Lookup
-
-# In[11]:
-
-
-# multiplier = 1000
-# vocab_size = 1000
-
-# def preprocess_data(data, multiplier):
-#     return tf.cast(data*multiplier, dtype=tf.int64)
-
-# train_M_X_Upscale = preprocess_data(train_M_X, multiplier)
-# test_M_X_Upscale = preprocess_data(test_M_X, multiplier)
-
-# layer_IntegerLookup = layers.IntegerLookup(output_mode='int', max_tokens=vocab_size, mask_token=0)
-# layer_IntegerLookup.adapt(train_M_X_Upscale)
-# print(layer_IntegerLookup.vocabulary_size())
-# print(layer_IntegerLookup.get_vocabulary()[:10])
-# print(layer_IntegerLookup.get_vocabulary()[-10:])
-
-
 # ### Callbacks
 
-# In[12]:
+# In[10]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -408,13 +396,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[13]:
+# In[11]:
 
 
 train_M_X.shape, test_M_X.shape
 
 
-# In[23]:
+# In[12]:
 
 
 tf.random.set_seed(42)
@@ -439,40 +427,34 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[24]:
+# In[13]:
 
 
-# Evaluate the model_1 initial losses
-initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X, train_M_Y, verbose=0)
-initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X, test_M_Y, verbose=0)
+# # Evaluate the model_1 initial losses
+# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X, train_M_Y, verbose=0)
+# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X, test_M_Y, verbose=0)
 
-history_1 = model_1.fit(train_M_X, train_M_Y, 
-                validation_data=(test_M_X, test_M_Y),
-                callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
-                                checkpoint_callback,
-                                early_stopping_cb],
-                batch_size=32, epochs=100, verbose=1)
+# history_1 = model_1.fit(train_M_X, train_M_Y, 
+#                 validation_data=(test_M_X, test_M_Y),
+#                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
+#                                 checkpoint_callback,
+#                                 early_stopping_cb],
+#                 batch_size=32, epochs=100, verbose=1)
 
 
-# In[25]:
+# In[14]:
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}{model_1.name}_{history_1.epoch[-1]+1}.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_3_19.csv')
 # # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X, test_M_Y, class_names)
 
 
-# In[26]:
+# In[15]:
 
 
 delete_folder_contents(pathfinal2)
 get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
 get_ipython().system(f'jupyter nbconvert {name} --to python')
-
-
-# In[ ]:
-
-
-
 
