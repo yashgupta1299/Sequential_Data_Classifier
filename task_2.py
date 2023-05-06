@@ -349,7 +349,7 @@ train_M_X
 
 # ### Callbacks
 
-# In[23]:
+# In[12]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -392,7 +392,7 @@ model_saver = ModelSaving()
 # This means if for 5 epochs the accuracy has no progress on 
 # the validation set then it would stop and store the previous best value.
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor='loss',
-                                                  patience=1,
+                                                  patience=2,
                                                   min_delta=threshold_val,
                                                   mode='min',
                                                   verbose=1)
@@ -408,13 +408,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[24]:
+# In[13]:
 
 
 train_M_X.shape, test_M_X.shape
 
 
-# In[25]:
+# In[23]:
 
 
 tf.random.set_seed(42)
@@ -427,9 +427,11 @@ model_1.add(layers.Masking(mask_value=0.0))
 # model_1.add(keras.layers.GlobalMaxPool2D())
 # model_1.add(layers.Embedding(input_dim=10000, output_dim=128, mask_zero=True))
 model_1.add(layers.LSTM(64, return_sequences=True))
-model_1.add(layers.LSTM(64, return_sequences=True))
-model_1.add(layers.LSTM(64))
-# model_1.add(layers.Dense(32, activation='tanh'))
+# model_1.add(layers.Dropout(0.1))
+model_1.add(layers.LSTM(32, return_sequences=True))
+# model_1.add(layers.Dropout(0.1))
+model_1.add(layers.LSTM(16))
+# model_1.add(layers.Dropout(0.2))
 model_1.add(layers.Dense(5, activation='softmax'))
 
 # # Train the RNN
@@ -437,7 +439,7 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[26]:
+# In[24]:
 
 
 # Evaluate the model_1 initial losses
@@ -452,16 +454,16 @@ history_1 = model_1.fit(train_M_X, train_M_Y,
                 batch_size=32, epochs=100, verbose=1)
 
 
-# In[27]:
+# In[25]:
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}{model_1.name}_{11}.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}{model_1.name}_{history_1.epoch[-1]+1}.csv')
 # # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X, test_M_Y, class_names)
 
 
-# In[28]:
+# In[26]:
 
 
 delete_folder_contents(pathfinal2)
