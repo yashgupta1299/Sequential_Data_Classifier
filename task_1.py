@@ -295,7 +295,6 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
     
 
 def inferences(df_model_history, model, data_X, data_Y):
-    print('\n\n')
     print(f'Training Accuracy for model: {df_model_history["accuracy"].to_list()[-1]*100:.2f}%')
     print(f'Validation Accuracy for model: {df_model_history["val_accuracy"].to_list()[-1]*100:.2f}%')
     print(f'Test Accuracy for model: {model.evaluate(data_X, data_Y, verbose=0)[1]*100:.2f}%')
@@ -490,16 +489,16 @@ model_1.summary()
 # In[15]:
 
 
-# # Evaluate the model_1 initial losses
-# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
-# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
+# Evaluate the model_1 initial losses
+initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
+initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
 
-# history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
-#                 validation_data=(test_M_X_Upscale, test_M_Y),
-#                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
-#                                 checkpoint_callback,
-#                                 early_stopping_cb],
-#                 batch_size=32, epochs=100, verbose=1)
+history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
+                validation_data=(test_M_X_Upscale, test_M_Y),
+                callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
+                                checkpoint_callback,
+                                early_stopping_cb],
+                batch_size=32, epochs=100, verbose=1)
 
 
 # In[16]:
