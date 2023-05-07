@@ -129,6 +129,9 @@ test_Y = []
 len_Y = [] # later sequence changed
 
 l0 = 'CV_Data'
+totalFiles=0
+train_files = 0
+test_files = 0
 for l1 in os.listdir(l0):
     if(l1 in class_names):
         f1 = os.path.join(l0, l1)
@@ -136,9 +139,18 @@ for l1 in os.listdir(l0):
             if(l2=='.DS_Store'):
                 continue
             f2 = os.path.join(f1, l2)
+            flag = False
             for l3 in os.listdir(f2):
                 if(l3=='.DS_Store'):
                     continue
+                if(flag==False):
+                    if(l2 == 'Train'):
+                        train_files+=len(os.listdir(f2))
+                    else:
+                        test_files+=len(os.listdir(f2))
+                    totalFiles+=len(os.listdir(f2))
+                    print(f'{l1} length: {len(os.listdir(f2))}, {l2}')
+                flag=True
                 f3 = os.path.join(f2, l3)
                 with open(f3, 'r') as f:
                     lines = f.readlines()
@@ -152,6 +164,8 @@ for l1 in os.listdir(l0):
                         test_X.append(mfcc_data)
                         test_Y.append(l1)
                         len_Y.append(length)
+
+print(f'Total files: {totalFiles}, Training Files {train_files}, Testing Files {test_files}')
 
 def suffleData(list1, list2, random_state_global):
     np.random.seed(random_state_global)
@@ -173,6 +187,7 @@ test_M_Y = LabelEncoder().fit_transform(test_Y)
 print(class_names)
 class_ind = LabelEncoder().fit_transform(class_names)
 print(class_ind)
+print(f'Sequence length range {min(np.min(len_X), np.min(len_Y))} to {max(np.max(len_X), np.max(len_Y))}')
 
 
 # ### Frequency of seq length
@@ -181,11 +196,13 @@ print(class_ind)
 
 
 maximum_sequence_length = 50
-print(f'Sequence length range {min(np.min(len_X), np.min(len_Y))} to {max(np.max(len_X), np.max(len_Y))}')
-plt.hist(len_X)
-plt.show()
-plt.hist(len_Y)
-plt.show()
+fig,ax = plt.subplots(1,2, figsize=(10, 5))
+ax = ax.reshape(-1)
+for i in range(2):
+    ax[i].hist(len_X if i==0 else len_Y)
+    ax[i].set_title('Train' if i==0 else 'Test')
+    ax[i].set_xlabel('Length of (2d) Points')
+    ax[i].set_ylabel('Frequency')
 
 
 # ### Visualizing Data
@@ -318,7 +335,7 @@ def plottingModel(model):
 def showResults(model, history, data_X, data_Y, class_names):
     inferences(history, model, data_X, data_Y)
     makingPredictionWithCM(model, data_X, data_Y, class_names)
-    plottingModel(model)
+    # plottingModel(model)
 
 
 # ### Padding Sequence
@@ -409,17 +426,10 @@ tf.random.set_seed(42)
 input_shape = (train_M_X.shape[1], train_M_X.shape[2])
 model_1 = Sequential()
 model_1.add(layers.Input(shape=input_shape))
-# model_1.add(layers.Reshape((-1, 2)))
 model_1.add(layers.Masking(mask_value=0.0))
-# model_1.add(layer_IntegerLookup)
-# model_1.add(keras.layers.GlobalMaxPool2D())
-# model_1.add(layers.Embedding(input_dim=10000, output_dim=128, mask_zero=True))
 model_1.add(layers.LSTM(64, return_sequences=True))
-# model_1.add(layers.Dropout(0.1))
 model_1.add(layers.LSTM(32, return_sequences=True))
-# model_1.add(layers.Dropout(0.1))
 model_1.add(layers.LSTM(16))
-# model_1.add(layers.Dropout(0.2))
 model_1.add(layers.Dense(5, activation='softmax'))
 
 # # Train the RNN
@@ -449,6 +459,7 @@ model_1.load_weights(checkpoint_path)
 df_history_1 = pd.read_csv(f'{pathfinal}sequential_3_19.csv')
 # # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X, test_M_Y, class_names)
+plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
 # In[15]:

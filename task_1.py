@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[16]:
+# In[1]:
 
 
 import tensorflow as tf
@@ -39,7 +39,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import confusion_matrix
 
 
-# In[17]:
+# In[2]:
 
 
 def unzip_data(filename):
@@ -56,7 +56,7 @@ def unzip_data(filename):
 # unzip_data("CV_Data.zip")
 
 
-# In[18]:
+# In[3]:
 
 
 name = 'task_1.ipynb'
@@ -84,7 +84,7 @@ test_dir = 'Group_20/test'
 val_dir = 'Group_20/val'
 
 
-# In[19]:
+# In[4]:
 
 
 def delete_folder_contents(path_erase):
@@ -109,10 +109,10 @@ def delete_folder_contents(path_erase):
             print(f"Error deleting {file_path}: {e}")
             
 # delete_folder_contents(pathfinal)
-# delete_folder_contents(pathfinal2)
+delete_folder_contents(pathfinal2)
 
 
-# In[20]:
+# In[5]:
 
 
 # symbol, telugu, english
@@ -128,7 +128,7 @@ def delete_folder_contents(path_erase):
 
 # ### Data Loading
 
-# In[21]:
+# In[6]:
 
 
 tw = ['ai', 'chA', 'dA', 'lA', 'tA']
@@ -146,7 +146,11 @@ for l1 in os.listdir(l0):
         f1 = os.path.join(l0, l1)
         for l2 in os.listdir(f1):
             f2 = os.path.join(f1, l2)
+            flag = False
             for l3 in os.listdir(f2):
+                if(flag==False):
+                    print(f'{l1} length: {len(os.listdir(f2))}, {l2}')
+                flag=True
                 f3 = os.path.join(f2, l3)
                 with open(f3) as f:
                     lines = f.readlines()
@@ -179,15 +183,29 @@ test_X, test_Y = suffleData(test_X, test_Y, random_state_global)
 
 train_M_Y = LabelEncoder().fit_transform(train_Y)
 test_M_Y = LabelEncoder().fit_transform(test_Y)
-maximum_sequence_length = max(np.max(len_X), np.max(len_Y))*2
 print(tw)
 classNames = LabelEncoder().fit_transform(tw)
 print(classNames)
+print(f'Points Range: {min(np.min(len_X), np.min(len_Y)), max(np.max(len_X), np.max(len_Y))}')
+
+
+# In[7]:
+
+
+maximum_sequence_length = max(np.max(len_X), np.max(len_Y))*2
+print(f'Consider maximum sequence length: {maximum_sequence_length}')
+fig,ax = plt.subplots(1,2, figsize=(10, 5))
+ax = ax.reshape(-1)
+for i in range(2):
+    ax[i].hist(len_X if i==0 else len_Y)
+    ax[i].set_title('Train' if i==0 else 'Test')
+    ax[i].set_xlabel('Length of (2d) Points')
+    ax[i].set_ylabel('Frequency')
 
 
 # ### Visualizing Data
 
-# In[23]:
+# In[ ]:
 
 
 def x_y_fun(arr):
@@ -211,8 +229,8 @@ def plot_data(data_X, data_Y):
             x,y = x_y_fun(data_X[i])
             if(mid==c):
                 mid+=5
-                ax[c].set_title(f'Character: {tw[cl]}')
-            ax[c].scatter(x, y, marker='.', c=colors[cl])
+                ax[c].set_title(f'{tw[cl]}', fontsize=20)
+            ax[c].scatter(x, y, marker='o', c=colors[cl])
             ax[c].axis(False)
             c+=1
             if(c%5==0):
@@ -227,7 +245,7 @@ plot_data(train_X, train_M_Y)
 
 # ### Functions
 
-# In[24]:
+# In[ ]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -324,12 +342,12 @@ def plottingModel(model):
 def showResults(model, history, data_X, data_Y, classNames):
     inferences(history, model, data_X, data_Y)
     makingPredictionWithCM(model, data_X, data_Y, classNames)
-    plottingModel(model)
+    # plottingModel(model)
 
 
 # ### Min Max Processing (To make ech sample in range from 0 to 1)
 
-# In[25]:
+# In[ ]:
 
 
 def minMaxPreprocessing(data):
@@ -348,7 +366,7 @@ plot_data(train_M_X, train_M_Y)
 
 # ### Padding Sequence
 
-# In[26]:
+# In[ ]:
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
@@ -362,7 +380,7 @@ test_M_X = paddingSequence(test_M_X)
 
 # ### Checkking Global Minimum and Maximum
 
-# In[27]:
+# In[ ]:
 
 
 def global_min_max(data1, data2):
@@ -387,7 +405,7 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[28]:
+# In[ ]:
 
 
 multiplier = 1000
@@ -408,7 +426,7 @@ print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 # ### Callbacks
 
-# In[29]:
+# In[ ]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -467,13 +485,21 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[30]:
+# In[ ]:
+
+
+maximum_sequence_length
+
+
+# In[ ]:
 
 
 tf.random.set_seed(42)
+
+input_shape = (train_M_X_Upscale.shape[1])
+
 model_1 = Sequential()
-model_1.add(layers.Input(shape=(None,)))
-# model_1.add(layers.Reshape((-1, 2)))
+model_1.add(layers.Input(shape=input_shape))
 # model_1.add(layers.Masking(mask_value=0.0))
 model_1.add(layer_IntegerLookup)
 model_1.add(layers.Embedding(input_dim=vocab_size, output_dim=128, mask_zero=True))
@@ -487,39 +513,35 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[15]:
+# In[ ]:
 
 
-# Evaluate the model_1 initial losses
-initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
-initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
+# # Evaluate the model_1 initial losses
+# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
+# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
 
-history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
-                validation_data=(test_M_X_Upscale, test_M_Y),
-                callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
-                                checkpoint_callback,
-                                early_stopping_cb],
-                batch_size=32, epochs=100, verbose=1)
-
-
-# In[16]:
-
-
-model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}{model_1.name}_{11}.csv')
-# df_history_1 = pd.DataFrame(history_1.history)
-showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
-
-
-# In[31]:
-
-
-get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
-get_ipython().system(f'jupyter nbconvert {name} --to python')
+# history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
+#                 validation_data=(test_M_X_Upscale, test_M_Y),
+#                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
+#                                 checkpoint_callback,
+#                                 early_stopping_cb],
+#                 batch_size=32, epochs=100, verbose=1)
 
 
 # In[ ]:
 
 
+model_1.load_weights(checkpoint_path)
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_11.csv')
+# df_history_1 = pd.DataFrame(history_1.history)
+showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
+plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
+
+# In[ ]:
+
+
+delete_folder_contents(pathfinal2)
+get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
+get_ipython().system(f'jupyter nbconvert {name} --to python')
 
