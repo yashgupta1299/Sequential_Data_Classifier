@@ -189,10 +189,13 @@ print(classNames)
 print(f'Points Range: {min(np.min(len_X), np.min(len_Y)), max(np.max(len_X), np.max(len_Y))}')
 
 
+# ### Sequence length
+
 # In[7]:
 
 
 maximum_sequence_length = max(np.max(len_X), np.max(len_Y))*2
+mask_value = -2
 print(f'Consider maximum sequence length: {maximum_sequence_length}')
 fig,ax = plt.subplots(1,2, figsize=(10, 5))
 ax = ax.reshape(-1)
@@ -205,7 +208,7 @@ for i in range(2):
 
 # ### Visualizing Data
 
-# In[ ]:
+# In[8]:
 
 
 def x_y_fun(arr):
@@ -245,7 +248,7 @@ plot_data(train_X, train_M_Y)
 
 # ### Functions
 
-# In[ ]:
+# In[9]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -347,7 +350,7 @@ def showResults(model, history, data_X, data_Y, classNames):
 
 # ### Min Max Processing (To make ech sample in range from 0 to 1)
 
-# In[ ]:
+# In[10]:
 
 
 def minMaxPreprocessing(data):
@@ -366,11 +369,11 @@ plot_data(train_M_X, train_M_Y)
 
 # ### Padding Sequence
 
-# In[ ]:
+# In[11]:
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
-    data_X = keras.preprocessing.sequence.pad_sequences(data_X, maxlen=maximum_sequence_length, padding='post', value=0, dtype='float32')
+    data_X = keras.preprocessing.sequence.pad_sequences(data_X, maxlen=maximum_sequence_length, padding='post', value=mask_value, dtype='float32')
     return data_X
 
 train_M_X = paddingSequence(train_M_X)
@@ -380,7 +383,7 @@ test_M_X = paddingSequence(test_M_X)
 
 # ### Checkking Global Minimum and Maximum
 
-# In[ ]:
+# In[12]:
 
 
 def global_min_max(data1, data2):
@@ -405,11 +408,11 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[ ]:
+# In[34]:
 
 
-multiplier = 1000
-vocab_size = 1000
+multiplier = 500
+vocab_size = 500
 
 def preprocess_data(data, multiplier):
     return tf.cast(data*multiplier, dtype=tf.int64)
@@ -417,16 +420,24 @@ def preprocess_data(data, multiplier):
 train_M_X_Upscale = preprocess_data(train_M_X, multiplier)
 test_M_X_Upscale = preprocess_data(test_M_X, multiplier)
 
-layer_IntegerLookup = layers.IntegerLookup(output_mode='int', max_tokens=vocab_size, mask_token=0)
+## mask token value will be mapped to 0 in output of this layer
+layer_IntegerLookup = layers.IntegerLookup(output_mode='int', max_tokens=vocab_size, mask_token=mask_value*multiplier)
 layer_IntegerLookup.adapt(train_M_X_Upscale)
 print(layer_IntegerLookup.vocabulary_size())
 print(layer_IntegerLookup.get_vocabulary()[:10])
 print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 
+# In[35]:
+
+
+z = layer_IntegerLookup(train_M_X_Upscale)
+np.min(z), np.max(z)
+
+
 # ### Callbacks
 
-# In[ ]:
+# In[36]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -485,13 +496,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[ ]:
+# In[37]:
 
 
 maximum_sequence_length
 
 
-# In[ ]:
+# In[38]:
 
 
 tf.random.set_seed(42)
@@ -500,7 +511,6 @@ input_shape = (train_M_X_Upscale.shape[1])
 
 model_1 = Sequential()
 model_1.add(layers.Input(shape=input_shape))
-# model_1.add(layers.Masking(mask_value=0.0))
 model_1.add(layer_IntegerLookup)
 model_1.add(layers.Embedding(input_dim=vocab_size, output_dim=128, mask_zero=True))
 model_1.add(layers.Bidirectional(layers.LSTM(64, return_sequences=True)))
@@ -513,35 +523,41 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[ ]:
+# In[39]:
 
 
-# # Evaluate the model_1 initial losses
-# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
-# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
+# Evaluate the model_1 initial losses
+initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
+initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
 
-# history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
-#                 validation_data=(test_M_X_Upscale, test_M_Y),
-#                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
-#                                 checkpoint_callback,
-#                                 early_stopping_cb],
-#                 batch_size=32, epochs=100, verbose=1)
+history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
+                validation_data=(test_M_X_Upscale, test_M_Y),
+                callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
+                                checkpoint_callback,
+                                early_stopping_cb],
+                batch_size=32, epochs=100, verbose=1)
 
 
-# In[ ]:
+# In[40]:
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}sequential_11.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_2_12.csv')
 # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[ ]:
+# In[41]:
 
 
 delete_folder_contents(pathfinal2)
 get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
 get_ipython().system(f'jupyter nbconvert {name} --to python')
+
+
+# In[ ]:
+
+
+
 
