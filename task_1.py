@@ -408,7 +408,7 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[34]:
+# In[13]:
 
 
 multiplier = 500
@@ -428,7 +428,7 @@ print(layer_IntegerLookup.get_vocabulary()[:10])
 print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 
-# In[35]:
+# In[14]:
 
 
 z = layer_IntegerLookup(train_M_X_Upscale)
@@ -437,7 +437,7 @@ np.min(z), np.max(z)
 
 # ### Callbacks
 
-# In[36]:
+# In[15]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -496,13 +496,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[37]:
+# In[16]:
 
 
 maximum_sequence_length
 
 
-# In[38]:
+# In[17]:
 
 
 tf.random.set_seed(42)
@@ -514,8 +514,8 @@ model_1.add(layers.Input(shape=input_shape))
 model_1.add(layer_IntegerLookup)
 model_1.add(layers.Embedding(input_dim=vocab_size, output_dim=128, mask_zero=True))
 model_1.add(layers.Bidirectional(layers.LSTM(64, return_sequences=True)))
-model_1.add(layers.Bidirectional(layers.LSTM(64, return_sequences=True)))
-model_1.add(layers.Bidirectional(layers.LSTM(64)))
+model_1.add(layers.Bidirectional(layers.LSTM(32, return_sequences=True)))
+model_1.add(layers.Bidirectional(layers.LSTM(16)))
 model_1.add(layers.Dense(5, activation='softmax'))
 
 # # Train the RNN
@@ -523,7 +523,7 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[39]:
+# In[18]:
 
 
 # Evaluate the model_1 initial losses
@@ -538,17 +538,17 @@ history_1 = model_1.fit(train_M_X_Upscale, train_M_Y,
                 batch_size=32, epochs=100, verbose=1)
 
 
-# In[40]:
+# In[21]:
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}sequential_2_12.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_57.csv')
 # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[41]:
+# In[22]:
 
 
 delete_folder_contents(pathfinal2)
