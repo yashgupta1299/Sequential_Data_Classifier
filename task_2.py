@@ -44,23 +44,6 @@ from sklearn.metrics import confusion_matrix
 # In[2]:
 
 
-def unzip_data(filename):
-  """
-  Unzips filename into the current working directory.
-
-  Args:
-    filename (str): a filepath to a target zip folder to be unzipped.
-  """
-  zip_ref = zipfile.ZipFile(filename, "r")
-  zip_ref.extractall()
-  zip_ref.close()
-  
-# unzip_data("CV_Data.zip")
-
-
-# In[3]:
-
-
 name = 'task_2.ipynb'
 
 path = ''
@@ -84,6 +67,23 @@ checkpoint_path = pathfinal+'weights/checkpoint'
 train_dir = 'Group_20/train'
 test_dir = 'Group_20/test'
 val_dir = 'Group_20/val'
+
+
+# In[3]:
+
+
+def unzip_data(filename):
+  """
+  Unzips filename into the current working directory.
+
+  Args:
+    filename (str): a filepath to a target zip folder to be unzipped.
+  """
+  zip_ref = zipfile.ZipFile(filename, "r")
+  zip_ref.extractall()
+  zip_ref.close()
+  
+unzip_data(f"{path}CV_Data.zip")
 
 
 # In[4]:
