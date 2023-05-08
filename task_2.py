@@ -196,6 +196,7 @@ print(f'Sequence length range {min(np.min(len_X), np.min(len_Y))} to {max(np.max
 
 
 maximum_sequence_length = 50
+mask_value = 0.0 ## because dataset do not have zero value
 fig,ax = plt.subplots(1,2, figsize=(10, 5))
 ax = ax.reshape(-1)
 for i in range(2):
@@ -344,7 +345,7 @@ def showResults(model, history, data_X, data_Y, class_names):
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
-    data_X = keras.preprocessing.sequence.pad_sequences(data_X, maxlen=maximum_sequence_length, padding='post', value=0, dtype='float32')
+    data_X = keras.preprocessing.sequence.pad_sequences(data_X, maxlen=maximum_sequence_length, padding='post', value=mask_value, dtype='float32')
     return data_X
 
 train_M_X = paddingSequence(train_X)
@@ -426,7 +427,7 @@ tf.random.set_seed(42)
 input_shape = (train_M_X.shape[1], train_M_X.shape[2])
 model_1 = Sequential()
 model_1.add(layers.Input(shape=input_shape))
-model_1.add(layers.Masking(mask_value=0.0))
+model_1.add(layers.Masking(mask_value=mask_value))
 model_1.add(layers.LSTM(64, return_sequences=True))
 model_1.add(layers.LSTM(32, return_sequences=True))
 model_1.add(layers.LSTM(16))
