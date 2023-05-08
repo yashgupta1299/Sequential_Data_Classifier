@@ -408,11 +408,11 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[13]:
+# In[22]:
 
 
-multiplier = 500
-vocab_size = 500
+multiplier = 50
+vocab_size = 60
 
 def preprocess_data(data, multiplier):
     return tf.cast(data*multiplier, dtype=tf.int64)
@@ -428,7 +428,7 @@ print(layer_IntegerLookup.get_vocabulary()[:10])
 print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 
-# In[14]:
+# In[23]:
 
 
 z = layer_IntegerLookup(train_M_X_Upscale)
@@ -437,7 +437,7 @@ np.min(z), np.max(z)
 
 # ### Callbacks
 
-# In[15]:
+# In[24]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -496,13 +496,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[16]:
+# In[25]:
 
 
 maximum_sequence_length
 
 
-# In[17]:
+# In[26]:
 
 
 tf.random.set_seed(42)
@@ -523,7 +523,7 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[18]:
+# In[27]:
 
 
 # Evaluate the model_1 initial losses
@@ -538,26 +538,20 @@ history_1 = model_1.fit(train_M_X_Upscale, train_M_Y,
                 batch_size=32, epochs=100, verbose=1)
 
 
-# In[21]:
+# In[28]:
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}sequential_57.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_1_16.csv')
 # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[22]:
+# In[29]:
 
 
 delete_folder_contents(pathfinal2)
 get_ipython().system('osascript -e \'tell application "System Events" to keystroke "s" using command down\'')
 get_ipython().system(f'jupyter nbconvert {name} --to python')
-
-
-# In[ ]:
-
-
-
 
