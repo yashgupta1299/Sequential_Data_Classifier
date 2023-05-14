@@ -61,8 +61,6 @@ epoch_val = 3000
 batch_size_val = 32
 threshold_val = 1e-4
 
-IMG_SIZE = (224, 224)
-CHANNELS = 3
 checkpoint_path = pathfinal+'weights/checkpoint'
 train_dir = 'Group_20/train'
 test_dir = 'Group_20/test'
@@ -450,7 +448,7 @@ model_1.summary()
 #                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
 #                                 checkpoint_callback,
 #                                 early_stopping_cb],
-#                 batch_size=32, epochs=100, verbose=1)
+#                 batch_size=batch_size_val, epochs=epoch_val, verbose=1)
 
 
 # In[14]:

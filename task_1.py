@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[20]:
+# In[1]:
 
 
 import tensorflow as tf
@@ -39,7 +39,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import confusion_matrix
 
 
-# In[21]:
+# In[2]:
 
 
 name = 'task_1.ipynb'
@@ -59,15 +59,13 @@ epoch_val = 3000
 batch_size_val = 32
 threshold_val = 1e-4
 
-IMG_SIZE = (224, 224)
-CHANNELS = 3
 checkpoint_path = pathfinal+'weights/checkpoint'
 train_dir = 'Group_20/train'
 test_dir = 'Group_20/test'
 val_dir = 'Group_20/val'
 
 
-# In[22]:
+# In[3]:
 
 
 def unzip_data(filename):
@@ -84,7 +82,7 @@ def unzip_data(filename):
 # unzip_data(f"{path}Handwriting_Data.zip")
 
 
-# In[23]:
+# In[4]:
 
 
 def delete_folder_contents(path_erase):
@@ -112,7 +110,7 @@ def delete_folder_contents(path_erase):
 delete_folder_contents(pathfinal2)
 
 
-# In[24]:
+# In[5]:
 
 
 # symbol, telugu, english
@@ -128,7 +126,7 @@ delete_folder_contents(pathfinal2)
 
 # ### Data Loading
 
-# In[25]:
+# In[6]:
 
 
 tw = ['ai', 'chA', 'dA', 'lA', 'tA']
@@ -145,9 +143,13 @@ for l1 in os.listdir(l0):
     if(l1 in tw):
         f1 = os.path.join(l0, l1)
         for l2 in os.listdir(f1):
+            if(l2=='.DS_Store'):
+                    continue
             f2 = os.path.join(f1, l2)
             flag = False
             for l3 in os.listdir(f2):
+                if(l3=='.DS_Store'):
+                    continue
                 if(flag==False):
                     print(f'{l1} length: {len(os.listdir(f2))}, {l2}')
                 flag=True
@@ -191,7 +193,7 @@ print(f'Points Range: {min(np.min(len_X), np.min(len_Y)), max(np.max(len_X), np.
 
 # ### Sequence length
 
-# In[26]:
+# In[7]:
 
 
 maximum_sequence_length = max(np.max(len_X), np.max(len_Y))*2
@@ -208,7 +210,7 @@ for i in range(2):
 
 # ### Visualizing Data
 
-# In[27]:
+# In[8]:
 
 
 def x_y_fun(arr):
@@ -248,7 +250,7 @@ plot_data(train_X, train_M_Y)
 
 # ### Functions
 
-# In[28]:
+# In[9]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -350,7 +352,7 @@ def showResults(model, history, data_X, data_Y, classNames):
 
 # ### Min Max Processing (To make ech sample in range from 0 to 1)
 
-# In[29]:
+# In[10]:
 
 
 def minMaxPreprocessing(data):
@@ -369,7 +371,7 @@ plot_data(train_M_X, train_M_Y)
 
 # ### Padding Sequence
 
-# In[30]:
+# In[11]:
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
@@ -383,7 +385,7 @@ test_M_X = paddingSequence(test_M_X)
 
 # ### Checkking Global Minimum and Maximum
 
-# In[31]:
+# In[12]:
 
 
 def global_min_max(data1, data2):
@@ -408,7 +410,7 @@ print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 # ### Upscaling the data and Fitting in Integer Lookup
 
-# In[32]:
+# In[13]:
 
 
 multiplier = 50
@@ -428,7 +430,7 @@ print(layer_IntegerLookup.get_vocabulary()[:10])
 print(layer_IntegerLookup.get_vocabulary()[-10:])
 
 
-# In[33]:
+# In[14]:
 
 
 z = layer_IntegerLookup(train_M_X_Upscale)
@@ -437,7 +439,7 @@ np.min(z), np.max(z)
 
 # ### Callbacks
 
-# In[34]:
+# In[15]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -496,13 +498,13 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[35]:
+# In[16]:
 
 
 maximum_sequence_length
 
 
-# In[36]:
+# In[17]:
 
 
 tf.random.set_seed(42)
@@ -523,22 +525,22 @@ model_1.compile(optimizer='adam', loss=keras.losses.SparseCategoricalCrossentrop
 model_1.summary()
 
 
-# In[37]:
+# In[18]:
 
 
-# Evaluate the model_1 initial losses
-initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
-initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
+# # Evaluate the model_1 initial losses
+# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
+# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
 
-history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
-                validation_data=(test_M_X_Upscale, test_M_Y),
-                callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
-                                checkpoint_callback,
-                                early_stopping_cb],
-                batch_size=32, epochs=100, verbose=1)
+# history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
+#                 validation_data=(test_M_X_Upscale, test_M_Y),
+#                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
+#                                 checkpoint_callback,
+#                                 early_stopping_cb],
+#                 batch_size=batch_size_val, epochs=epoch_val, verbose=1)
 
 
-# In[40]:
+# In[19]:
 
 
 model_1.load_weights(checkpoint_path)
@@ -548,7 +550,7 @@ showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[41]:
+# In[20]:
 
 
 delete_folder_contents(pathfinal2)
