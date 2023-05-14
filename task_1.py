@@ -60,9 +60,6 @@ batch_size_val = 32
 threshold_val = 1e-4
 
 checkpoint_path = pathfinal+'weights/checkpoint'
-train_dir = 'Group_20/train'
-test_dir = 'Group_20/test'
-val_dir = 'Group_20/val'
 
 
 # In[3]:
@@ -138,7 +135,7 @@ test_X = []
 test_Y = []
 len_Y = [] # later sequence changed
 
-l0 = 'Handwriting_Data'
+l0 = path + 'Handwriting_Data'
 for l1 in os.listdir(l0):
     if(l1 in tw):
         f1 = os.path.join(l0, l1)
