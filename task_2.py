@@ -455,7 +455,7 @@ model_1.load_weights(checkpoint_path)
 df_history_1 = pd.read_csv(f'{pathfinal}sequential_3_19.csv')
 # # df_history_1 = pd.DataFrame(history_1.history)
 showResults(model_1, df_history_1, test_M_X, test_M_Y, class_names)
-plot_model(model_1,to_file=f'model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
+plot_model(model_1,to_file=f'{path}model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
 # In[15]:
