@@ -232,7 +232,7 @@ def plot_data(data_X, data_Y):
             if(mid==c):
                 mid+=5
                 ax[c].set_title(f'{tw[cl]}', fontsize=20)
-            ax[c].scatter(x, y, marker='o', c=colors[cl])
+            ax[c].plot(x, y, marker='o', c=colors[cl])
             ax[c].axis(False)
             c+=1
             if(c%5==0):
@@ -547,7 +547,7 @@ showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
 plot_model(model_1,to_file=f'{path}model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[20]:
+# In[ ]:
 
 
 delete_folder_contents(pathfinal2)
