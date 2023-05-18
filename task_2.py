@@ -219,7 +219,7 @@ def plot_data(data_X, data_Y):
         if(ele==cl):
             im = librosa.display.specshow(np.array(data_X[i]).T, x_axis='time',ax=ax[c])
             fig.colorbar(im, ax=ax[c])
-            ax[c].set_title(f'MFCC Spectrogram: {class_names[cl]}')
+            ax[c].set_title(f'{class_names[cl]}')
             ax[c].set_ylabel('MFCC Coefficients')
             ax[c].set_xlabel('Time')
             c+=1
