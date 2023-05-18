@@ -275,10 +275,10 @@ def make_confusion_matrix(y_true, y_pred, classes=None, figsize=(10, 10), text_s
              size=text_size)
     
 
-def inferences(df_model_history, model, data_X, data_Y):
-    print(f'Training Accuracy for model: {df_model_history["accuracy"].to_list()[-1]*100:.2f}%')
-    print(f'Validation Accuracy for model: {df_model_history["val_accuracy"].to_list()[-1]*100:.2f}%')
-    print(f'Test Accuracy for model: {model.evaluate(data_X, data_Y, verbose=0)[1]*100:.2f}%')
+def inferences(df_model_history, model, train_M_X, train_M_Y, test_M_X, test_M_Y):
+    print(f'Training Accuracy for model: {model.evaluate(train_M_X, train_M_Y, verbose=0)[1]*100:.2f}%')
+    # print(f'Validation Accuracy for model: {df_model_history["val_accuracy"].to_list()[-1]*100:.2f}%')
+    print(f'Test Accuracy for model: {model.evaluate(test_M_X, test_M_Y, verbose=0)[1]*100:.2f}%')
 
     df_model_history.plot(title="Accuracy / Loss vs Epoch", xlabel='Epoch', ylabel='Accuracy / Loss')
     plt.show()
@@ -301,9 +301,9 @@ def plottingModel(model):
     plt.axis(False)
     plt.show()
 
-def showResults(model, history, data_X, data_Y, classNames):
-    inferences(history, model, data_X, data_Y)
-    makingPredictionWithCM(model, data_X, data_Y, classNames)
+def showResults(model, history, train_M_X, train_M_Y, test_M_X, test_M_Y, classNames):
+    inferences(history, model, train_M_X, train_M_Y, test_M_X, test_M_Y)
+    makingPredictionWithCM(model, test_M_X, test_M_Y, classNames)
     # plottingModel(model)
 
 
@@ -572,7 +572,7 @@ model_1.summary()
 model_1.load_weights(checkpoint_path)
 df_history_1 = pd.read_csv(f'{pathfinal}sequential_1_89.csv')
 # df_history_1 = pd.DataFrame(history_1.history)
-showResults(model_1, df_history_1, test_M_X, test_M_Y, tw)
+showResults(model_1, df_history_1, train_M_X, train_M_Y, test_M_X, test_M_Y, tw)
 plot_model(model_1,to_file=f'{path}model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
