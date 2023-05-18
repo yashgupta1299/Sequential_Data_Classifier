@@ -193,8 +193,8 @@ print(f'Points Range: {min(np.min(len_X), np.min(len_Y)), max(np.max(len_X), np.
 # In[7]:
 
 
-maximum_sequence_length = max(np.max(len_X), np.max(len_Y))*2
-mask_value = -2
+maximum_sequence_length = max(np.max(len_X), np.max(len_Y))
+mask_value = -2.0
 print(f'Consider maximum sequence length: {maximum_sequence_length}')
 fig,ax = plt.subplots(1,2, figsize=(10, 5))
 ax = ax.reshape(-1)
@@ -205,49 +205,9 @@ for i in range(2):
     ax[i].set_ylabel('Frequency')
 
 
-# ### Visualizing Data
-
-# In[8]:
-
-
-def x_y_fun(arr):
-    x,y = [],[]
-    for i in range(len(arr)):
-        x.append(arr[i]) if (i%2==0) else y.append(arr[i])
-    return x,y
-def plot_data(data_X, data_Y):
-    if(str(type(data_X)) == "<class 'numpy.ndarray'>"):
-        data_X = data_X.tolist()
-    sorted_lists = sorted(zip(data_Y, data_X))
-    data_Y, data_X = zip(*sorted_lists)
-    fig,ax = plt.subplots(5,5, figsize=(15, 15))
-    ax = ax.reshape(-1)
-    c=0
-    cl=0
-    mid=2
-    colors = ['r', 'g', 'b', 'y', 'm']
-    for i, ele in enumerate(data_Y):
-        if(ele==cl):
-            x,y = x_y_fun(data_X[i])
-            if(mid==c):
-                mid+=5
-                ax[c].set_title(f'{tw[cl]}', fontsize=20)
-            ax[c].plot(x, y, marker='o', c=colors[cl])
-            ax[c].axis(False)
-            c+=1
-            if(c%5==0):
-                cl+=1
-            if(c==25):
-                break
-    plt.tight_layout()
-    plt.show()
-
-plot_data(train_X, train_M_Y)
-
-
 # ### Functions
 
-# In[9]:
+# In[8]:
 
 
 # Note: The following confusion matrix code is a remix of Scikit-Learn's 
@@ -347,42 +307,132 @@ def showResults(model, history, data_X, data_Y, classNames):
     # plottingModel(model)
 
 
-# ### Min Max Processing (To make ech sample in range from 0 to 1)
+# ### reshaping input
+
+# In[9]:
+
+
+def reshapeTup(tup):
+    points = []
+    n = len(tup)
+    i=0
+    while(i<n):
+        points.append([tup[i], tup[i+1]])
+        i+=2
+    return points
+
+def reshapeData(data):
+    new_data = []
+    n = len(data)
+    for i in range(n):
+        new_data.append(reshapeTup(data[i]))
+    return new_data
+
+train_R_X = reshapeData(train_X)
+test_R_X = reshapeData(test_X)
+
+
+# ### Visualizing Input
 
 # In[10]:
 
 
+def x_y_fun(arr):
+    x,y = [],[]
+    for i in range(len(arr)):
+        x.append(arr[i]) if (i%2==0) else y.append(arr[i])
+    return x,y
+def plot_data(data_X, data_Y):
+    fig,ax = plt.subplots(5,5, figsize=(15, 15))
+    ax = ax.reshape(-1)
+    c=0
+    cl=0
+    mid=2
+    colors = ['r', 'g', 'b', 'y', 'm']
+    for i, ele in enumerate(data_Y):
+        if(ele==cl):
+            if(mid==c):
+                mid+=5
+                ax[c].set_title(f'{tw[cl]}', fontsize=20)
+            ax[c].plot(
+                        [point[0] for point in data_X[i]],
+                        [point[1] for point in data_X[i]], 
+                        marker='o', c=colors[cl])
+            ax[c].axis(False)
+            c+=1
+            if(c%5==0):
+                cl+=1
+            if(c==25):
+                break
+    plt.tight_layout()
+    plt.show()
+
+plot_data(train_R_X, train_M_Y)
+
+
+# ### Min Max Processing (To make each sample in range from 0 to 1)
+
+# In[11]:
+
+
+def scale_down_points(points):
+    min_x = min(point[0] for point in points)
+    max_x = max(point[0] for point in points)
+    min_y = min(point[1] for point in points)
+    max_y = max(point[1] for point in points)
+
+    center_x = (max_x + min_x) / float(2)
+    center_y = (max_y + min_y) / float(2)
+
+    scale = float(max(max_x - min_x, max_y - min_y))
+
+    scaled_points = []
+    for point in points:
+        x_scaled = ((point[0] - center_x) / scale)  +  0.5
+        if(x_scaled < 0.0 ):
+            x_scaled = 0.0
+        if(x_scaled > 1.0 ):
+            x_scaled = 1.0
+        y_scaled = ((point[1] - center_y) / scale)  + 0.5
+        if(y_scaled < 0.0 ):
+            y_scaled = 0.0
+        if(y_scaled > 1.0 ):
+            y_scaled = 1.0
+        scaled_points.append([x_scaled, y_scaled])
+
+    return scaled_points
+
+# # Example usage
 def minMaxPreprocessing(data):
     new_data = []
-    for i, tup in enumerate(data):
-        scaler = MinMaxScaler()
-        tup = np.array(tup).reshape(-1, 1)
-        scaler.fit(tup)
-        new_data.append(list(scaler.transform(tup).reshape(-1)))
+    for points in data:
+        new_data.append(scale_down_points(points))
     return new_data
 
-train_M_X = minMaxPreprocessing(train_X)
-test_M_X = minMaxPreprocessing(test_X)
-plot_data(train_M_X, train_M_Y)
+train_R_M_X = minMaxPreprocessing(train_R_X)
+test_R_M_X = minMaxPreprocessing(test_R_X)
+
+plot_data(train_R_M_X, train_M_Y)
 
 
 # ### Padding Sequence
 
-# In[11]:
+# In[12]:
 
 
 def paddingSequence(data_X, maxlen=maximum_sequence_length):
     data_X = keras.preprocessing.sequence.pad_sequences(data_X, maxlen=maximum_sequence_length, padding='post', value=mask_value, dtype='float32')
     return data_X
 
-train_M_X = paddingSequence(train_M_X)
-test_M_X = paddingSequence(test_M_X)
+train_M_X = paddingSequence(train_R_M_X)
+test_M_X = paddingSequence(test_R_M_X)
+
 # plot_data(train_M_X, train_M_Y)
 
 
 # ### Checkking Global Minimum and Maximum
 
-# In[12]:
+# In[13]:
 
 
 def global_min_max(data1, data2):
@@ -405,38 +455,9 @@ g_min_x, g_max_x, g_min_y, g_max_y = global_min_max(train_M_X, test_M_X)
 print(g_min_x, g_max_x, g_min_y, g_max_y)
 
 
-# ### Upscaling the data and Fitting in Integer Lookup
-
-# In[13]:
-
-
-multiplier = 50
-vocab_size = 100
-
-def preprocess_data(data, multiplier):
-    return tf.cast(data*multiplier, dtype=tf.int64)
-
-train_M_X_Upscale = preprocess_data(train_M_X, multiplier)
-test_M_X_Upscale = preprocess_data(test_M_X, multiplier)
-
-## mask token value will be mapped to 0 in output of this layer
-layer_IntegerLookup = layers.IntegerLookup(output_mode='int', max_tokens=vocab_size, mask_token=mask_value*multiplier)
-layer_IntegerLookup.adapt(train_M_X_Upscale)
-print(layer_IntegerLookup.vocabulary_size())
-print(layer_IntegerLookup.get_vocabulary()[:10])
-print(layer_IntegerLookup.get_vocabulary()[-10:])
-
-
-# In[14]:
-
-
-z = layer_IntegerLookup(train_M_X_Upscale)
-np.min(z), np.max(z)
-
-
 # ### Callbacks
 
-# In[15]:
+# In[14]:
 
 
 class ModelSaving(keras.callbacks.Callback):
@@ -479,7 +500,7 @@ model_saver = ModelSaving()
 # This means if for 5 epochs the accuracy has no progress on 
 # the validation set then it would stop and store the previous best value.
 early_stopping_cb = keras.callbacks.EarlyStopping(monitor='loss',
-                                                  patience=1,
+                                                  patience=10,
                                                   min_delta=threshold_val,
                                                   mode='min',
                                                   verbose=1)
@@ -495,10 +516,16 @@ checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # ### Building a RNN,LSTM Model
 
-# In[16]:
+# In[15]:
 
 
 maximum_sequence_length
+
+
+# In[16]:
+
+
+train_M_X.shape
 
 
 # In[17]:
@@ -506,15 +533,17 @@ maximum_sequence_length
 
 tf.random.set_seed(42)
 
-input_shape = (train_M_X_Upscale.shape[1])
+input_shape = (train_M_X.shape[1], train_M_X.shape[2])
 
 model_1 = Sequential()
 model_1.add(layers.Input(shape=input_shape))
-model_1.add(layer_IntegerLookup)
-model_1.add(layers.Embedding(input_dim=vocab_size, output_dim=128, mask_zero=True))
-model_1.add(layers.Bidirectional(layers.LSTM(64, return_sequences=True)))
-model_1.add(layers.Bidirectional(layers.LSTM(32, return_sequences=True)))
-model_1.add(layers.Bidirectional(layers.LSTM(16)))
+model_1.add(layers.Masking(mask_value=mask_value))
+# model_1.add(layers.Bidirectional(layers.GRU(64, return_sequences=True))) # fast
+model_1.add(layers.GRU(64, return_sequences=True))
+# model_1.add(layers.Bidirectional(layers.GRU(32, return_sequences=True))) # fast
+model_1.add(layers.GRU(32, return_sequences=True))
+# model_1.add(layers.Bidirectional(layers.GRU(16))) # fast
+model_1.add(layers.GRU(16))
 model_1.add(layers.Dense(5, activation='softmax'))
 
 # # Train the RNN
@@ -526,11 +555,11 @@ model_1.summary()
 
 
 # # Evaluate the model_1 initial losses
-# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X_Upscale,train_M_Y, verbose=0)
-# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X_Upscale,test_M_Y, verbose=0)
+# initial_train_loss, initial_train_acc = model_1.evaluate(train_M_X,train_M_Y, verbose=0)
+# initial_valid_loss, initial_valid_acc = model_1.evaluate(test_M_X,test_M_Y, verbose=0)
 
-# history_1 = model_1.fit(train_M_X_Upscale, train_M_Y, 
-#                 validation_data=(test_M_X_Upscale, test_M_Y),
+# history_1 = model_1.fit(train_M_X, train_M_Y, 
+#                 validation_data=(test_M_X, test_M_Y),
 #                 callbacks=[HistorySaver((initial_train_loss, initial_train_acc, initial_valid_loss, initial_valid_acc)), 
 #                                 checkpoint_callback,
 #                                 early_stopping_cb],
@@ -541,13 +570,13 @@ model_1.summary()
 
 
 model_1.load_weights(checkpoint_path)
-df_history_1 = pd.read_csv(f'{pathfinal}sequential_1_12.csv')
+df_history_1 = pd.read_csv(f'{pathfinal}sequential_1_89.csv')
 # df_history_1 = pd.DataFrame(history_1.history)
-showResults(model_1, df_history_1, test_M_X_Upscale, test_M_Y, tw)
+showResults(model_1, df_history_1, test_M_X, test_M_Y, tw)
 plot_model(model_1,to_file=f'{path}model_images/model.png', show_shapes=True, show_layer_activations=True, expand_nested=True, dpi=999)
 
 
-# In[ ]:
+# In[20]:
 
 
 delete_folder_contents(pathfinal2)
